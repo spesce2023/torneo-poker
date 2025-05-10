@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premios Torneo de Poker</title>
+  <style>
+    body {
+      background-image: url('img/fondo.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: 'Arial Black', sans-serif;
+      color: #FFD700;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    h1 img {
+      height: 40px;
+    }
+    .premios, .luces {
+      background-color: rgba(0, 0, 0, 0.8);
+      border: 3px solid #FFD700;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 0 10px #FFD700;
+    }
+    .premio-item, .luz-item {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+    .title {
+      color: #FF6347;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    .icon {
+      width: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Torneo de Poker</h1>
+
+  <div class="premios">
+    <div class="title">🎁 Premios</div>
+    <div class="premio-item">
+      <img src="https://cdn-icons-png.flaticon.com/512/992/992703.png" class="icon" />
+      1º Puesto: <span id="primerPremio">$0</span>
+    </div>
+    <div class="premio-item">
+      <img src="https://cdn-icons-png.flaticon.com/512/2583/2583326.png" class="icon" />
+      2º Puesto: <span id="segundoPremio">$0</span>
+    </div>
+    <div class="premio-item">
+      <img src="https://cdn-icons-png.flaticon.com/512/2583/2583331.png" class="icon" />
+      3º Puesto: <span id="tercerPremio">$0</span>
+    </div>
+  </div>
+
+  <div class="luces">
+    <div class="title">💡 Luces actuales</div>
+    <div class="luz-item">
+      <img src="https://cdn-icons-png.flaticon.com/512/991/991992.png" class="icon" />
+      <span id="lucesEstado">Rojo</span>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("primerPremio").textContent = "$3000";
+    document.getElementById("segundoPremio").textContent = "$1800";
+    document.getElementById("tercerPremio").textContent = "$1200";
+    document.getElementById("lucesEstado").textContent = "Nivel 3 - Ciegas 200/400";
+  </script>
+</body>
+</html>
