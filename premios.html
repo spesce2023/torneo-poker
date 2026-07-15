@@ -45,16 +45,58 @@
 <body>
   <h1>Premios y Luces</h1>
   <div class="section">
-    <div class="valor">💰 Pozo inicial: <strong>$10.000</strong></div>
-    <div class="valor">💵 Pozo actual: <strong>$35.800</strong></div>
-    <div class="valor">🥇 1er premio: <strong>$17.900</strong></div>
-    <div class="valor">🥈 2do premio: <strong>$10.740</strong></div>
-    <div class="valor">🥉 3er premio: <strong>$7.160</strong></div>
-    <p style="font-size: 16px; color: aliceblue;">Ultima actualización: 21:30h</p>
+    <div class="valor">💰 Pozo inicial: <strong id="pozoInicial">Cargando...</strong></div>
+    <div class="valor">💵 Pozo actual: <strong id="pozoActual">Cargando...</strong></div>
+    <div class="valor">🥇 1er premio: <strong id="premio1">-</strong></div>
+    <div class="valor">🥈 2do premio: <strong id="premio2">-</strong></div>
+    <div class="valor">🥉 3er premio: <strong id="premio3">-</strong></div>
+    <p style="font-size: 16px; color: aliceblue;">Ultima actualización: <span id="ultimaActualizacion">-</span></p>
   </div>
   <div class="section">
     <div class="valor">💡 Ciegas actuales: <strong>50/100</strong></div>
   </div>
   <a class="boton" href="index.html">Volver al inicio</a>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script>
+    const formatoMoneda = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+
+    function renderEstado(estado) {
+      if (!estado) return;
+      const pozoActual = Number(estado.current_pool);
+      document.getElementById('pozoInicial').textContent = `$${formatoMoneda.format(estado.initial_pool)}`;
+      document.getElementById('pozoActual').textContent = `$${formatoMoneda.format(pozoActual)}`;
+      document.getElementById('premio1').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_first / 100))}`;
+      document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
+      document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
+      document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + 'h';
+    }
+
+    async function cargarEstado() {
+      const { data, error } = await supabaseClient
+        .from('tournament_state')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error) {
+        document.getElementById('ultimaActualizacion').textContent = 'Error al cargar datos';
+        console.error(error);
+        return;
+      }
+
+      renderEstado(data);
+    }
+
+    cargarEstado();
+
+    supabaseClient
+      .channel('tournament_state_changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tournament_state', filter: 'id=eq.1' }, (payload) => {
+        renderEstado(payload.new);
+      })
+      .subscribe();
+  </script>
 </body>
 </html>

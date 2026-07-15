@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administración - Torneo de Poker</title>
+  <style>
+    body {
+      background-color: #0f3b1c;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .card {
+      background-color: rgba(0, 0, 0, 0.35);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 420px;
+    }
+    input {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .btn {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 15px;
+      background-color: #1e824c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #2ecc71;
+    }
+    .btn.rebuy {
+      background-color: #b8860b;
+    }
+    .btn.rebuy:hover {
+      background-color: #d4a017;
+    }
+    .btn.addon {
+      background-color: #7b1fa2;
+    }
+    .btn.addon:hover {
+      background-color: #9c27b0;
+    }
+    .btn.logout {
+      background-color: #8B0000;
+      max-width: 200px;
+    }
+    .valor {
+      font-size: 1.2em;
+      margin: 8px 0;
+    }
+    .mensaje {
+      min-height: 20px;
+      font-size: 14px;
+    }
+    .mensaje.error {
+      color: #ff6b6b;
+    }
+    .mensaje.ok {
+      color: #2ecc71;
+    }
+    a.volver {
+      display: inline-block;
+      margin-top: 20px;
+      color: #cccccc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Administración del Torneo</h1>
+
+  <div id="loginCard" class="card">
+    <p>Ingresá con tu usuario de administrador</p>
+    <input id="email" type="email" placeholder="Email" autocomplete="username">
+    <input id="password" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="btn" id="btnLogin">Ingresar</button>
+    <p id="loginMensaje" class="mensaje error"></p>
+  </div>
+
+  <div id="panelCard" class="card" style="display:none;">
+    <div class="valor">💰 Pozo inicial: <strong id="pozoInicial">-</strong></div>
+    <div class="valor">💵 Pozo actual: <strong id="pozoActual">-</strong></div>
+    <div class="valor">🥇 <span id="premio1">-</span> · 🥈 <span id="premio2">-</span> · 🥉 <span id="premio3">-</span></div>
+    <p style="font-size: 13px; color: #cccccc;">Última actualización: <span id="ultimaActualizacion">-</span></p>
+
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+
+    <p>Nuevo pozo inicial (arranca un torneo)</p>
+    <input id="nuevoPozoInicial" type="number" min="0" step="1" placeholder="Ej: 10000">
+    <button class="btn" id="btnIniciar">Iniciar / Actualizar pozo inicial</button>
+
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+
+    <button class="btn rebuy" id="btnRebuy">Compra Re Buy (+$300)</button>
+    <button class="btn addon" id="btnAddon">Compra Add On (+$375)</button>
+
+    <p id="panelMensaje" class="mensaje"></p>
+
+    <button class="btn logout" id="btnLogout">Cerrar sesión</button>
+  </div>
+
+  <a class="volver" href="index.html">← Volver al inicio</a>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script>
+    const loginCard = document.getElementById('loginCard');
+    const panelCard = document.getElementById('panelCard');
+    const loginMensaje = document.getElementById('loginMensaje');
+    const panelMensaje = document.getElementById('panelMensaje');
+    const formatoMoneda = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+
+    function mostrarMensaje(el, texto, tipo) {
+      el.textContent = texto;
+      el.className = `mensaje ${tipo}`;
+      if (texto) {
+        setTimeout(() => { if (el.textContent === texto) el.textContent = ''; }, 4000);
+      }
+    }
+
+    function renderEstado(estado) {
+      const pozoActual = Number(estado.current_pool);
+      document.getElementById('pozoInicial').textContent = `$${formatoMoneda.format(estado.initial_pool)}`;
+      document.getElementById('pozoActual').textContent = `$${formatoMoneda.format(pozoActual)}`;
+      document.getElementById('premio1').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_first / 100))}`;
+      document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
+      document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
+      document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + 'h';
+      document.getElementById('nuevoPozoInicial').value = estado.initial_pool;
+    }
+
+    async function cargarEstado() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('tournament_state')
+          .select('*')
+          .eq('id', 1)
+          .single();
+
+        if (error) {
+          mostrarMensaje(panelMensaje, 'Error al cargar el estado del torneo.', 'error');
+          console.error(error);
+          return;
+        }
+        renderEstado(data);
+      } catch (err) {
+        mostrarMensaje(panelMensaje, 'No se pudo conectar con el servidor.', 'error');
+        console.error(err);
+      }
+    }
+
+    async function actualizarEstado(cambios) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('tournament_state')
+          .update({ ...cambios, updated_at: new Date().toISOString() })
+          .eq('id', 1)
+          .select()
+          .single();
+
+        if (error) {
+          mostrarMensaje(panelMensaje, 'No se pudo actualizar. Revisá tu sesión.', 'error');
+          console.error(error);
+          return;
+        }
+        renderEstado(data);
+        mostrarMensaje(panelMensaje, 'Actualizado correctamente.', 'ok');
+      } catch (err) {
+        mostrarMensaje(panelMensaje, 'No se pudo conectar con el servidor.', 'error');
+        console.error(err);
+      }
+    }
+
+    function mostrarPanelSegunSesion(session) {
+      if (session) {
+        loginCard.style.display = 'none';
+        panelCard.style.display = 'block';
+        cargarEstado();
+      } else {
+        loginCard.style.display = 'block';
+        panelCard.style.display = 'none';
+      }
+    }
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+      mostrarPanelSegunSesion(session);
+    });
+
+    supabaseClient.auth.getSession().then(({ data }) => {
+      mostrarPanelSegunSesion(data.session);
+    });
+
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          mostrarMensaje(loginMensaje, 'Usuario o contraseña incorrectos.', 'error');
+        }
+      } catch (err) {
+        mostrarMensaje(loginMensaje, 'No se pudo conectar. Intentá de nuevo.', 'error');
+        console.error(err);
+      }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+    });
+
+    document.getElementById('btnIniciar').addEventListener('click', () => {
+      const valor = Number(document.getElementById('nuevoPozoInicial').value);
+      if (!valor || valor < 0) {
+        mostrarMensaje(panelMensaje, 'Ingresá un pozo inicial válido.', 'error');
+        return;
+      }
+      actualizarEstado({ initial_pool: valor, current_pool: valor });
+    });
+
+    async function sumarAlPozo(monto) {
+      try {
+        const { data, error } = await supabaseClient.rpc('increment_pool', { monto });
+        if (error) {
+          mostrarMensaje(panelMensaje, 'No se pudo actualizar. Revisá tu sesión.', 'error');
+          console.error(error);
+          return;
+        }
+        renderEstado(data);
+        mostrarMensaje(panelMensaje, 'Actualizado correctamente.', 'ok');
+      } catch (err) {
+        mostrarMensaje(panelMensaje, 'No se pudo conectar con el servidor.', 'error');
+        console.error(err);
+      }
+    }
+
+    document.getElementById('btnRebuy').addEventListener('click', () => sumarAlPozo(300));
+    document.getElementById('btnAddon').addEventListener('click', () => sumarAlPozo(375));
+  </script>
+</body>
+</html>
