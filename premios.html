@@ -70,7 +70,7 @@
       document.getElementById('premio1').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_first / 100))}`;
       document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
       document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
-      document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + 'h';
+      document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) + 'h';
     }
 
     async function cargarEstado() {
