@@ -101,6 +101,7 @@
     <div class="valor">💰 Pozo inicial: <strong id="pozoInicial">-</strong></div>
     <div class="valor">💵 Pozo actual: <strong id="pozoActual">-</strong></div>
     <div class="valor">🥇 <span id="premio1">-</span> · 🥈 <span id="premio2">-</span> · 🥉 <span id="premio3">-</span></div>
+    <div class="valor">💡 Ciegas actuales: <strong id="ciegas">-</strong></div>
     <p style="font-size: 13px; color: #cccccc;">Última actualización: <span id="ultimaActualizacion">-</span></p>
 
     <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
@@ -113,6 +114,13 @@
 
     <button class="btn rebuy" id="btnRebuy">Compra Re Buy (+$300)</button>
     <button class="btn addon" id="btnAddon">Compra Add On (+$375)</button>
+
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+
+    <p>Ciegas (chica / grande)</p>
+    <input id="ciegaChica" type="number" min="0" step="1" placeholder="Ciega chica, ej: 50">
+    <input id="ciegaGrande" type="number" min="0" step="1" placeholder="Ciega grande, ej: 100">
+    <button class="btn" id="btnCiegas">Actualizar ciegas</button>
 
     <p id="panelMensaje" class="mensaje"></p>
 
@@ -146,7 +154,10 @@
       document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
       document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
       document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) + 'h';
+      document.getElementById('ciegas').textContent = `${estado.blind_small}/${estado.blind_big}`;
       document.getElementById('nuevoPozoInicial').value = estado.initial_pool;
+      document.getElementById('ciegaChica').value = estado.blind_small;
+      document.getElementById('ciegaGrande').value = estado.blind_big;
     }
 
     async function cargarEstado() {
@@ -255,6 +266,16 @@
 
     document.getElementById('btnRebuy').addEventListener('click', () => sumarAlPozo(300));
     document.getElementById('btnAddon').addEventListener('click', () => sumarAlPozo(375));
+
+    document.getElementById('btnCiegas').addEventListener('click', () => {
+      const chica = Number(document.getElementById('ciegaChica').value);
+      const grande = Number(document.getElementById('ciegaGrande').value);
+      if (!chica || !grande || chica < 0 || grande < 0) {
+        mostrarMensaje(panelMensaje, 'Ingresá valores de ciegas válidos.', 'error');
+        return;
+      }
+      actualizarEstado({ blind_small: chica, blind_big: grande });
+    });
   </script>
 </body>
 </html>

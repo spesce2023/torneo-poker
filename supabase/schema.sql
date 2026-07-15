@@ -44,3 +44,9 @@ as $$
   where id = 1
   returning *;
 $$;
+
+-- Migracion: agrega las ciegas (chica/grande) editables desde el panel admin.
+-- Ejecutar solo esto si la tabla ya existia sin estas columnas.
+alter table tournament_state
+  add column if not exists blind_small int not null default 50,
+  add column if not exists blind_big int not null default 100;
