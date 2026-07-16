@@ -1,103 +1,204 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Premios y Luces - Torneo de Poker</title>
-  <style>
-    body {
-      margin: 0;
-      background: linear-gradient(to bottom, #8B0000, #000000);
-      font-family: 'Arial Black', sans-serif;
-      color: #FFD700;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      margin-top: 10px;
-      font-size: 1.8em;
-      text-shadow: 2px 2px #000;
-    }
-    .section {
-      background-color: rgba(0, 0, 0, 0.7);
-      border: 2px solid #FFD700;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      box-shadow: 0 0 10px #FFD700;
-    }
-    .valor {
-      font-size: 1.4em;
-      margin: 10px 0;
-    }
-    .boton {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #FFD700;
-      color: black;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premios y ciegas - Torneo de Poker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a0505;
+    display: flex;
+    justify-content: center;
+  }
+  .screen {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    padding: 24px 18px 32px;
+  }
+  .title {
+    text-align: center;
+    color: #f5c542;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .card {
+    border: 1px solid #f5c542;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    background: #150404;
+  }
+  .card-label {
+    text-align: center;
+    color: #f5c542;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .pot-total {
+    text-align: center;
+    color: #fff;
+    font-size: 34px;
+    font-weight: 700;
+    margin: 4px 0 4px;
+  }
+  .pot-initial {
+    text-align: center;
+    color: #a89a7a;
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+
+  .podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .podium .place { text-align: center; }
+  .podium .medal { font-size: 22px; }
+  .podium .box {
+    border-radius: 8px 8px 0 0;
+    padding: 10px 6px 8px;
+  }
+  .podium .box .rank { font-size: 11px; }
+  .podium .box .amount { font-size: 15px; font-weight: 700; color: #fff; }
+
+  .place-2 .box { background: #2a1010; border: 1px solid #6b7280; height: 56px; width: 84px; }
+  .place-2 .rank { color: #d1d5db; }
+  .place-1 .medal { font-size: 28px; }
+  .place-1 .box { background: #2a1a05; border: 1px solid #f5c542; height: 78px; width: 92px; }
+  .place-1 .rank { color: #f5c542; }
+  .place-1 .amount { font-size: 18px; }
+  .place-3 .box { background: #2a1508; border: 1px solid #b45309; height: 42px; width: 84px; }
+  .place-3 .rank { color: #e0b88a; }
+
+  .timestamp {
+    text-align: center;
+    color: #8a7a5c;
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  .blinds-value {
+    text-align: center;
+    color: #fff;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 6px 0;
+  }
+
+  .btn-home {
+    display: block;
+    background: #f5c542;
+    color: #1a0505;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+  }
+</style>
 </head>
 <body>
-  <h1>Premios y Luces</h1>
-  <div class="section">
-    <div class="valor">💰 Pozo inicial: <strong id="pozoInicial">Cargando...</strong></div>
-    <div class="valor">💵 Pozo actual: <strong id="pozoActual">Cargando...</strong></div>
-    <div class="valor">🥇 1er premio: <strong id="premio1">-</strong></div>
-    <div class="valor">🥈 2do premio: <strong id="premio2">-</strong></div>
-    <div class="valor">🥉 3er premio: <strong id="premio3">-</strong></div>
-    <p style="font-size: 16px; color: aliceblue;">Ultima actualización: <span id="ultimaActualizacion">-</span></p>
-  </div>
-  <div class="section">
-    <div class="valor">💡 Ciegas actuales: <strong id="ciegas">-</strong></div>
-  </div>
-  <a class="boton" href="index.html">Volver al inicio</a>
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script>
-    const formatoMoneda = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+<div class="screen">
 
-    function renderEstado(estado) {
-      if (!estado) return;
-      const pozoActual = Number(estado.current_pool);
-      document.getElementById('pozoInicial').textContent = `$${formatoMoneda.format(estado.initial_pool)}`;
-      document.getElementById('pozoActual').textContent = `$${formatoMoneda.format(pozoActual)}`;
-      document.getElementById('premio1').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_first / 100))}`;
-      document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
-      document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
-      document.getElementById('ultimaActualizacion').textContent = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) + 'h';
-      document.getElementById('ciegas').textContent = `${estado.blind_small}/${estado.blind_big}`;
+  <div class="title">🏆 Premios y ciegas</div>
+
+  <div class="card">
+    <div class="card-label">POZO TOTAL</div>
+    <div class="pot-total" id="pozoActual">Cargando...</div>
+    <div class="pot-initial" id="pozoInicial" style="display:none;"></div>
+
+    <div class="podium">
+      <div class="place place-2">
+        <div class="medal">🥈</div>
+        <div class="box"><div class="rank">2do</div><div class="amount" id="premio2">-</div></div>
+      </div>
+      <div class="place place-1">
+        <div class="medal">🥇</div>
+        <div class="box"><div class="rank">1ro</div><div class="amount" id="premio1">-</div></div>
+      </div>
+      <div class="place place-3">
+        <div class="medal">🥉</div>
+        <div class="box"><div class="rank">3ro</div><div class="amount" id="premio3">-</div></div>
+      </div>
+    </div>
+    <div class="timestamp">Última actualización: <span id="ultimaActualizacionPremios">-</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">CIEGAS ACTUALES</div>
+    <div class="blinds-value" id="ciegas">-</div>
+    <div class="timestamp">Última actualización: <span id="ultimaActualizacionCiegas">-</span></div>
+  </div>
+
+  <a class="btn-home" href="index.html">Volver al inicio</a>
+
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script>
+  const formatoMoneda = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+
+  function renderEstado(estado) {
+    if (!estado) return;
+    const pozoActual = Number(estado.current_pool);
+    const pozoInicial = Number(estado.initial_pool);
+    const horaActualizacion = new Date(estado.updated_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) + 'h';
+
+    document.getElementById('pozoActual').textContent = `$${formatoMoneda.format(pozoActual)}`;
+
+    const pozoInicialEl = document.getElementById('pozoInicial');
+    if (pozoInicial !== pozoActual) {
+      pozoInicialEl.textContent = `Inicial $${formatoMoneda.format(pozoInicial)}`;
+      pozoInicialEl.style.display = 'block';
+    } else {
+      pozoInicialEl.style.display = 'none';
     }
 
-    async function cargarEstado() {
-      const { data, error } = await supabaseClient
-        .from('tournament_state')
-        .select('*')
-        .eq('id', 1)
-        .single();
+    document.getElementById('premio1').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_first / 100))}`;
+    document.getElementById('premio2').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_second / 100))}`;
+    document.getElementById('premio3').textContent = `$${formatoMoneda.format(Math.round(pozoActual * estado.split_third / 100))}`;
+    document.getElementById('ultimaActualizacionPremios').textContent = horaActualizacion;
 
-      if (error) {
-        document.getElementById('ultimaActualizacion').textContent = 'Error al cargar datos';
-        console.error(error);
-        return;
-      }
+    document.getElementById('ciegas').textContent = `${estado.blind_small} / ${estado.blind_big}`;
+    document.getElementById('ultimaActualizacionCiegas').textContent = horaActualizacion;
+  }
 
-      renderEstado(data);
+  async function cargarEstado() {
+    const { data, error } = await supabaseClient
+      .from('tournament_state')
+      .select('*')
+      .eq('id', 1)
+      .single();
+
+    if (error) {
+      document.getElementById('ultimaActualizacionPremios').textContent = 'Error al cargar datos';
+      document.getElementById('ultimaActualizacionCiegas').textContent = 'Error al cargar datos';
+      console.error(error);
+      return;
     }
 
-    cargarEstado();
+    renderEstado(data);
+  }
 
-    supabaseClient
-      .channel('tournament_state_changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tournament_state', filter: 'id=eq.1' }, (payload) => {
-        renderEstado(payload.new);
-      })
-      .subscribe();
-  </script>
+  cargarEstado();
+
+  supabaseClient
+    .channel('tournament_state_changes')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tournament_state', filter: 'id=eq.1' }, (payload) => {
+      renderEstado(payload.new);
+    })
+    .subscribe();
+</script>
+
 </body>
 </html>
